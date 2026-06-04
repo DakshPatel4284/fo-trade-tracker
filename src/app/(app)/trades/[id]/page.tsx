@@ -1,5 +1,6 @@
 'use client'
 
+import { use } from 'react'
 import { useTrades } from '@/hooks/use-trades'
 import { useTradeStore } from '@/store/trade-store'
 import { formatCurrency, formatDateTime, getSymbolLabel, getPnlColor } from '@/utils/trade'
@@ -17,11 +18,12 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
-export default function TradeDetailPage({ params }: { params: { id: string } }) {
+export default function TradeDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const { removeTrade } = useTrades()
   const { toast } = useToast()
-  const trade = useTradeStore(s => s.trades.find(t => t.id === params.id))
+  const trade = useTradeStore(s => s.trades.find(t => t.id === id))
 
   if (!trade) return (
     <div className="p-6 text-center text-muted-foreground">Trade not found.</div>
@@ -76,7 +78,6 @@ export default function TradeDetailPage({ params }: { params: { id: string } }) 
         </div>
       </div>
 
-      {/* P&L Summary */}
       <Card className={cn('border-2', trade.net_pnl && trade.net_pnl >= 0 ? 'border-profit/30 bg-profit/5' : trade.net_pnl ? 'border-loss/30 bg-loss/5' : '')}>
         <CardContent className="pt-5">
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -96,7 +97,6 @@ export default function TradeDetailPage({ params }: { params: { id: string } }) 
         </CardContent>
       </Card>
 
-      {/* Details */}
       <div className="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Instrument</CardTitle></CardHeader>

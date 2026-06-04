@@ -1,5 +1,6 @@
 'use client'
 
+import { use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTrades } from '@/hooks/use-trades'
 import { useTradeStore } from '@/store/trade-store'
@@ -9,11 +10,12 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
-export default function EditTradePage({ params }: { params: { id: string } }) {
+export default function EditTradePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const { editTrade, isLoading } = useTrades()
   const { toast } = useToast()
-  const trade = useTradeStore(s => s.trades.find(t => t.id === params.id))
+  const trade = useTradeStore(s => s.trades.find(t => t.id === id))
 
   if (!trade) {
     return (

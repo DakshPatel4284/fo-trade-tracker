@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { RolloverChain } from '@/types'
 import { formatCurrency, formatDate, getPnlColor } from '@/utils/trade'
@@ -12,23 +12,24 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
-export default function RolloverDetailPage({ params }: { params: { id: string } }) {
+export default function RolloverDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const supabase = createClient()
   const [chain, setChain] = useState<RolloverChain | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchChain = async () => {
       const { data } = await supabase
         .from('rollover_chains')
         .select('*, rollovers(*)')
-        .eq('id', params.id)
+        .eq('id', id)
         .single()
       setChain(data)
       setLoading(false)
     }
-    fetch()
-  }, [params.id])
+    fetchChain()
+  }, [id])
 
   if (loading) return (
     <div className="p-6 space-y-4">
@@ -71,7 +72,6 @@ export default function RolloverDetailPage({ params }: { params: { id: string } 
         </div>
       </div>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-4 text-center">
@@ -93,7 +93,6 @@ export default function RolloverDetailPage({ params }: { params: { id: string } 
         </Card>
       </div>
 
-      {/* Chain details */}
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-sm">Chain Details</CardTitle></CardHeader>
         <CardContent className="divide-y">
@@ -106,7 +105,6 @@ export default function RolloverDetailPage({ params }: { params: { id: string } 
         </CardContent>
       </Card>
 
-      {/* Position chain timeline */}
       {chain.rollovers && chain.rollovers.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
@@ -120,12 +118,10 @@ export default function RolloverDetailPage({ params }: { params: { id: string } 
                 .sort((a, b) => new Date(a.rollover_date).getTime() - new Date(b.rollover_date).getTime())
                 .map((r, i) => (
                   <div key={r.id} className="relative pl-6">
-                    {/* Timeline dot */}
                     <div className="absolute left-0 top-2 w-3 h-3 rounded-full bg-primary border-2 border-background ring-2 ring-primary/30" />
                     {i < (chain.rollovers?.length ?? 0) - 1 && (
                       <div className="absolute left-1.5 top-5 bottom-0 w-px bg-border" />
                     )}
-
                     <div className="bg-muted/30 rounded-lg p-3 ml-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-muted-foreground">
