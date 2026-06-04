@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword(values)
+    const { error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.password })
     setLoading(false)
     if (error) {
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' })
